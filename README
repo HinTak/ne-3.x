@@ -1,0 +1,59 @@
+The NE Text Editor
+------------------
+
+Copyright (c) 2018 University of Cambridge
+
+The latest source for NE is kept at this FTP site:
+
+ftp://ftp.csx.cam.ac.uk/pub/software/wordprocessing/unix/ne/ne-xx.xx.tar.gz
+
+I hope that this version of the program will run without problems on all Unix 
+and Unix-like systems. It should just be a matter of typing
+
+./configure
+make
+make install
+
+NE uses Terminfo features when running in screen mode. It can be configured to 
+use the older Termcap system by running
+
+./configure --enable-termcap
+
+NE makes use of the PCRE library for regular expression matching. From release
+3.10 it uses PCRE2 (versions 10.xx). PCRE1 (versions 8.xx) is a dead-end as far
+as long-term maintenance is concerned. You can, however, revert to using PCRE1
+by running
+
+./configure --disable-pcre2
+
+The final NE-specific "configure" option is
+
+./configure --disable-vdiscard
+
+This is provided for use in environments where the VDISCARD flag for terminal 
+handling is not defined.
+
+Philip Hazel
+Email local part: ph10
+Email domain: cam.ac.uk
+February 2018
+
+
+
+LICENCE
+-------
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA 02111 USA.
+
+--
