@@ -2,10 +2,10 @@
 *             The E text editor - 3rd incarnation          *
 ***********************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: August 2018 */
+/* This file last modified: May 2021 */
 
 
 /******************************************************************************
@@ -22,15 +22,17 @@ version is the result of a big tidy-up to make the Unix version buildable in
 the standard "configure" manner. It has been tested only on Unix(-like)
 systems, and the code for other environments has been gradually stripped out.
 
-February 2011: There has been a lot of hacking about to add the -widechars
-feature. I would have done it rather differently if I had been including this
-from the start. As it is, I chose to avoid too much disturbance at the cost of
-some potential elegance.
+February 2011: There has been a lot of hacking about to add the -widechars 
+(that is, UTF-8) feature. I would have done it rather differently if I had been
+including this from the start. As it is, I chose to avoid too much disturbance
+at the cost of some potential elegance.
 
 January 2016: More tidying, mainly converting lots of integer variables to
 unsigned integers to get rid of compiler warnings. Some more interfaces that
 are not relevant in Unix-like systems were removed. There is still lots of
 tidying that could be done.
+
+See the doc/ChangeLog file for a list of changes in the various releases.
 ******************************************************************************/
 
 
@@ -69,35 +71,36 @@ tidying that could be done.
 *                  Global Macros                           *
 ***********************************************************/
 
-#define BIGNUMBER  0x7fffffff
-#define MAX_RMARGIN   1000000
-#define MAX_LINELENGTH 100000
+#define BIGNUMBER   0x7fffffff
+#define MAX_RMARGIN    1000000
+#define MAX_LINELENGTH  100000
 
-#define MAX_FROM           50       /* max from files */
-#define BLOCK_SCROLL_MIN    6       /* minimum block size for scroll adjust */
+#define MAX_FROM            50    /* max from files */
+#define BLOCK_SCROLL_MIN     6    /* minimum block size for scroll adjust */
 
-#define CBOOL uschar                /* used to save space in structures */
+#define CBOOL uschar              /* used to save space in structures */
 
-#define MATCH_OK            0       /* returns from cmd_matchxx functions */
-#define MATCH_FAILED      (+1)
-#define MATCH_ERROR       (-1)
+#define MATCH_OK             0    /* returns from cmd_matchxx functions */
+#define MATCH_FAILED       (+1)
+#define MATCH_ERROR        (-1)
 
-#define intbits      (sizeof(int)*8)     /* number of bits in an int */
-#define qsmapsize   (32/sizeof(int))     /* number of bytes in a 256-bit map */
+#define intbits      (sizeof(int)*8)  /* number of bits in an int */
+#define qsmapsize   (32/sizeof(int))  /* number of bytes in a 256-bit map */
 
-#define message_window      1
-#define first_window        2
+#define message_window       1
+#define first_window         2
+                           
+#define max_fkey            30    /* max function key */
+#define max_keystring       60    /* max function keystring */
+#define max_fixedKstring    10    /* unchangeable ones */
+#define max_undelete       100    /* maximum undelete lines */
+#define max_wordlen         19
+                           
+#define CMD_BUFFER_SIZE    512
+#define cmd_stacktop       100
+#define FNAME_BUFFER_SIZE 4096    /* file names can be long */
 
-#define max_fkey           30    /* max function key */
-#define max_keystring      60    /* max function keystring */
-#define max_fixedKstring   10    /* unchangeable ones */
-#define max_undelete      100    /* maximum undelete lines */
-#define max_wordlen        19
-
-#define cmd_buffer_size   512
-#define cmd_stacktop      100
-
-#define back_size          20    /* number of "back" reference regions */
+#define back_size           20    /* number of "back" reference regions */
 
 #define mac_skipspaces(a)  while (*a == ' ') a++
 
@@ -466,7 +469,7 @@ extern BOOL    main_screenOK;          /* screen mode and not suspended */
 extern BOOL    main_screensuspended;   /* screen temporarily suspended */
 extern BOOL    main_selectedbuffer;    /* true if buffer has changed */
 extern BOOL    main_shownlogo;         /* FALSE if need to show logo on error */
-extern int     main_storetotal;        /* Total store used */
+extern size_t  main_storetotal;        /* Total store used */
 extern BOOL    main_tabflag;           /* Flag tabbed input lines */
 extern BOOL    main_tabin;             /* the tabin option */
 extern BOOL    main_tabout;            /* the tabout option */
@@ -529,7 +532,7 @@ extern const   int utf8_table3[];      /* Globally used UTF-8 table */
 extern const   uschar utf8_table4[];   /* Globally used UTF-8 table */
 
 extern uschar *version_copyright;      /* Copyright string */
-extern uschar *version_date;           /* Identity date */
+extern uschar  version_date[];         /* Identity date */
 extern uschar *version_string;         /* Identity of program version */
 extern uschar  version_pcre[];         /* Which PCRE is in use */
 
@@ -653,7 +656,7 @@ extern void    scrn_windows(void);
 extern int     setup_dbuffer(bufferstr *);
 extern int     setup_newbuffer(uschar *);
 
-extern void    store_chop(void *, usint);
+extern void    store_chop(void *, size_t);
 extern void   *store_copy(void *);
 extern linestr *store_copyline(linestr *);
 extern uschar *store_copystring(uschar *);
@@ -661,10 +664,10 @@ extern uschar *store_copystring2(uschar *, uschar *);
 extern void    store_free(void *);
 extern void    store_freequeuecheck(void);
 extern void    store_free_all(void);
-extern void   *store_get(usint);
-extern void   *store_getlbuff(int);
+extern void   *store_get(size_t);
+extern void   *store_getlbuff(size_t);
 extern void    store_init(void);
-extern void   *store_Xget(usint);
+extern void   *store_Xget(size_t);
 
 extern uschar *sys_argstring(uschar *);
 extern void    sys_beep(void);
@@ -678,7 +681,7 @@ extern int     sys_fcomplete(int, int *);
 extern FILE   *sys_fopen(uschar *, uschar *);
 extern BOOL    sys_help(uschar *);
 extern void    sys_init1(void);
-extern void    sys_init2(void);
+extern void    sys_init2(uschar *);
 extern uschar *sys_keyreason(int);
 extern void    sys_keystroke(int);
 extern void    sys_mprintf(FILE *, const char *, ...) FPRINTF_FUNCTION;
@@ -687,6 +690,7 @@ extern int     sys_rc(int);
 extern void    sys_runscreen(void);
 extern void    sys_runwindow(void);
 extern void    sys_specialnotes(usint *, void(*)(usint, usint *));
+extern void    sys_tidy_up(void);
 extern int     utf82ord(uschar *, int *);
 extern void    version_init(void);
 

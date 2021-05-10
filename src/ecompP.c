@@ -127,7 +127,7 @@ pcre_malloc = (void *(*)(size_t))store_Xget;
 pcre_free = store_free;
 #else
 
-/* Set up PCRE2 contexts, which are needed for custom memory management, anda
+/* Set up PCRE2 contexts, which are needed for custom memory management, and a
 match data block, if they do not already exist. */
 
 if (re_general_context == NULL)

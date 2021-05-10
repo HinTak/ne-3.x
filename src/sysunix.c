@@ -2,15 +2,14 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: October 2018 */
+/* This file last modified: May 2021 */
 
 
-/* This file contains the system-specific routines for Unix,
-with the exception of the window-specific code, which lives in
-its own modules. */
+/* This file contains the system-specific routines for Unix, with the exception
+of the window-specific code, which lives in its own modules. */
 
 #include <memory.h>
 #include <fcntl.h>
@@ -82,7 +81,6 @@ uschar *signal_names[] = {
 static uschar *termcap_buf = NULL;
 #endif
 
-static uschar user_init_file[256];
 static uschar *term_name;
 static int term_type;
 
@@ -345,8 +343,8 @@ static uschar *my_tgetstr(uschar *key)
 uschar *yield, *p;
 uschar workbuff[256];
 p = workbuff;
-if (tgetstr(key, &p) == 0 || workbuff[0] == 0) return NULL;
-yield = (uschar *)malloc(Ustrlen(workbuff)+1);
+if (tgetstr(key, (char **)(&p)) == 0 || workbuff[0] == 0) return NULL;
+yield = (uschar *)store_Xget(Ustrlen(workbuff)+1);
 Ustrcpy(yield, workbuff);
 return yield;
 
@@ -444,7 +442,7 @@ tgetkeystr(uschar *s, int *acount, uschar **aptr, int keyvalue)
 #ifdef HAVE_TERMCAP
 uschar workbuff[256];
 uschar *p = workbuff;
-if (tgetstr(s, &p) == 0 || workbuff[0] == 0) return 0;
+if (tgetstr(s, (char **)(&p)) == 0 || workbuff[0] == 0) return 0;
 
 #else
 uschar *workbuff = (uschar *)tigetstr(CS s);
@@ -609,8 +607,6 @@ configuration option. */
 #endif
 
 
-
-
 static int CheckTerminal(void)
 {
 uschar *p;
@@ -625,7 +621,7 @@ ioctl calls. */
 ioctl_fd = open("/dev/tty", O_RDWR);
 
 #ifdef HAVE_TERMCAP
-if (termcap_buf == NULL) termcap_buf = (uschar *)malloc(1024);
+if (termcap_buf == NULL) termcap_buf = (uschar *)store_Xget(1024);
 if (tgetent(termcap_buf, term_name) != 1) return term_other;
 #else
 if (setupterm(CS term_name, ioctl_fd, &erret) != OK || erret != 1)
@@ -732,7 +728,7 @@ if ((tc_s_ic = my_tgetstr(US TCI_IC)) != NULL)
   uschar *tv = my_tgetstr(US TCI_IM);
   if (tv != NULL && *tv != 0) tc_s_ic = NULL;
 #ifdef HAVE_TERMCAP
-  if (tv != NULL) free(tv);
+  if (tv != NULL) store_free(tv);
 #endif
   }
 
@@ -741,7 +737,7 @@ if ((tc_s_dc = my_tgetstr(US TCI_DC)) != NULL)
   uschar *tv = my_tgetstr(US TCI_DM);
   if (tv != NULL && *tv != 0) tc_s_dc = NULL;
 #ifdef HAVE_TERMCAP
-  if (tv != NULL) free(tv);
+  if (tv != NULL) store_free(tv);
 #endif
   }
 
@@ -749,10 +745,10 @@ if ((tc_s_dc = my_tgetstr(US TCI_DC)) != NULL)
 structure for sunix to scan. Only the cursor keys are mandatory. Key values
 greater 127 are always data. */
 
-tc_k_strings = (uschar *)malloc(tc_keylistsize);
+tc_k_strings = (uschar *)store_Xget(tc_keylistsize);
 keyptr = tc_k_strings + 1;
 
-tc_k_trigger = (uschar *)malloc(128);
+tc_k_trigger = (uschar *)store_Xget(128);
 memset((void *)tc_k_trigger, 255, 128);  /* all unset */
 
 use_utf8 = FALSE;
@@ -876,6 +872,7 @@ error_printf("esc-esc-char control char as data\n");
 }
 
 
+
 /*************************************************
 *          Handle window size change             *
 *************************************************/
@@ -916,8 +913,8 @@ crash_handler(sig);
 *              Local initialization              *
 *************************************************/
 
-/* This is called first thing in main() for doing vital system-
-specific early things. */
+/* This is called first thing in main() for doing vital system- specific early
+things. */
 
 void sys_init1(void)
 {
@@ -927,11 +924,11 @@ if (tabs != NULL) main_tabs = tabs;
 }
 
 
-/* This is called after argument decoding is complete to allow
-any system-specific over-riding to take place. Main_screenmode
-will be TRUE unless -line or -with was specified. */
+/* This is called after argument decoding is complete to allow any system-
+specific over-riding to take place. Main_screenmode will be TRUE unless -line
+or -with was specified. */
 
-void sys_init2(void)
+void sys_init2(uschar *init_file_buffer)
 {
 int i;
 uschar *nercname;
@@ -940,17 +937,19 @@ struct stat statbuf;
 
 term_name = US getenv("TERM");
 
-/* Look for the the name of a user-specific initialization file */
+/* Look for the the name of a user-specific initialization file, defaulting to 
+~/.nerc. Put the name into the supplied buffer, but point main_einit at it only 
+if the file exists. */
 
 nercname = US getenv("NERC");
 if (nercname == NULL)
   {
-  Ustrcpy(user_init_file, getenv("HOME"));
-  Ustrcat(user_init_file, "/.nerc");
+  Ustrcpy(init_file_buffer, getenv("HOME"));
+  Ustrcat(init_file_buffer, "/.nerc");
   }
-else Ustrcpy(user_init_file, nercname);
+else Ustrcpy(init_file_buffer, nercname);
 
-if (Ustat(user_init_file, &statbuf) == 0) main_einit = user_init_file;
+if (Ustat(init_file_buffer, &statbuf) == 0) main_einit = init_file_buffer;
 
 /* Remove legal file characters from file delimiters list */
 
@@ -981,6 +980,19 @@ if (!main_screenmode) term_type = term_other; else
   }
 }
 
+
+
+/*************************************************
+*           Tidy up at exit time                 *
+*************************************************/
+
+void sys_tidy_up(void)
+{
+if (!main_screenmode) return;
+#ifndef HAVE_TERMCAP
+del_curterm(cur_term);
+#endif
+}
 
 
 /*************************************************
@@ -1293,7 +1305,7 @@ switch (key & ~(s_f_shiftbit+s_f_ctrlbit))
 
 BOOL sys_help(uschar *s)
 {
-s = s;
+(void)s;
 return FALSE;
 }
 

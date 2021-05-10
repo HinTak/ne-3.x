@@ -1,6 +1,24 @@
 Change Log for New E (NE)
 -------------------------
 
+Version 3.18 04-May-2021
+------------------------
+
+1. Allow mark textblock and mark rectangle keystrokes in readonly mode (the 
+corresponding commands and the "copy" keystroke were already allowed; this was 
+an oversight).
+
+2. Two casts in sysunix.c for the 2nd argument of tgetstr().
+
+3. The buffers for file names were too small for very long file names. They 
+have been increased in size and put on the stack instead of statics in the
+binary.
+
+4. Some obsolete memory-handling code has been tidied up. Use size_t for memory 
+sizes. NE now frees all its memory via an atexit() function, but in screen mode
+ncurses doesn't free everything (see various online discussions).
+
+
 Version 3.17 21-October-2018
 ----------------------------
 

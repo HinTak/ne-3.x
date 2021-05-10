@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: August 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains code for obeying commands: Part II */
@@ -359,7 +359,7 @@ while (Gcontinue)
             error_printf("%s", prompt);
             error_printflush();  
             /* Note fudge to avoid compiler warning */ 
-            if(Ufgets(cmd_buffer, cmd_buffer_size, kbd_fid)){};
+            if(Ufgets(cmd_buffer, CMD_BUFFER_SIZE, kbd_fid)){};
             cmd_buffer[Ustrlen(cmd_buffer)-1] = 0;
             }
 

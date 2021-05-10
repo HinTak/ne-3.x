@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: February 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains code for obeying commands: Part I */
@@ -633,7 +633,7 @@ cmd_clineno = 0;
 while (yield == done_continue)
   {
   int n;
-  if (Ufgets(cmd_buffer, cmd_buffer_size, cmdin_fid) == NULL) break;
+  if (Ufgets(cmd_buffer, CMD_BUFFER_SIZE, cmdin_fid) == NULL) break;
   cmd_clineno++;
   n = Ustrlen(cmd_buffer);
   if (n > 0 && cmd_buffer[n-1] == '\n') cmd_buffer[n-1] = 0;
@@ -725,7 +725,7 @@ while (yield == done_continue)
   {
   if (line == NULL || (line->flags & lf_eof) != 0) break;
 
-  if (line->len > cmd_buffer_size - 1)
+  if (line->len > CMD_BUFFER_SIZE - 1)
     {
     error_moan(56);
     yield = done_error;

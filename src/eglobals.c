@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: April 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains all the global data */
@@ -147,7 +147,7 @@ BOOL  main_screenOK = FALSE;
 BOOL  main_screensuspended = FALSE;
 BOOL  main_selectedbuffer;
 BOOL  main_shownlogo = FALSE;       /* FALSE if need to show logo on error */
-int   main_storetotal = 0;          /* Total store used */
+size_t main_storetotal = 0;         /* Total store used */
 BOOL  main_tabflag = FALSE;
 BOOL  main_tabin = FALSE;
 BOOL  main_tabout = FALSE;
@@ -204,7 +204,7 @@ int   sys_openfail_reason = of_other;
 int   topbit_minimum = 160;         /* minimum top-bit uschar */
 
 uschar *version_copyright;          /* Copyright string */
-uschar *version_date;               /* Identity date */
+uschar  version_date[20];           /* Identity date */
 uschar *version_string;             /* Identity of program version */
 uschar  version_pcre[32];           /* Which PCRE is in use */
 

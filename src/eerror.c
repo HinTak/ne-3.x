@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2016 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: May 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains code for handling errors */
@@ -128,10 +128,11 @@ static error_struct error_data[] = {
 { rc_serious,  TRUE,  US"Error while matching regular expression:\n   %s\n" },
 #endif
 { rc_serious,  FALSE, US"A line longer than %d bytes has been split\n" },
-{ rc_serious,  FALSE, US"File contains a line longer than %d bytes\n" }
+{ rc_serious,  FALSE, US"File contains a line longer than %d bytes\n" },
+{ rc_disaster, FALSE, US"Call to atexit() failed\n" }
 };
 
-#define error_maxerror 67
+#define error_maxerror (int)(sizeof(error_data)/sizeof(error_struct))
 
 
 /*************************************************

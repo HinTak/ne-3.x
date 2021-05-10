@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: February 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains code for handling individual function keystrokes. */
@@ -54,7 +54,7 @@ static uschar key_readonly[] = {
   0, /* ka_join */
   0, /* ka_lb */
   0, /* ka_pa */
-  0, /* ka_rb */
+  1, /* ka_rb */
   0, /* ka_reshow */
   1, /* ka_rc */
   0, /* ka_rs */
@@ -65,7 +65,7 @@ static uschar key_readonly[] = {
   1, /* ka_sctop */
   1, /* ka_scup */
   0, /* ka_split */
-  0, /* ka_tb */
+  1, /* ka_tb */
   0, /* ka_dpleft */
   1, /* ka_forced */
   0, /* ka_last */
@@ -85,17 +85,15 @@ static uschar key_readonly[] = {
 *              Change keystring value            *
 *************************************************/
 
-/* Keystring values must be held in non-volatile store */
-
 void key_setfkey(int n, uschar *s)
 {
 uschar *news;
 if (s == NULL) news = NULL; else
   {
-  news = malloc(Ustrlen(s) + 1);
+  news = store_Xget(Ustrlen(s) + 1);
   Ustrcpy(news, s);
   }
-if (main_keystrings[n] != NULL) free(main_keystrings[n]);
+if (main_keystrings[n] != NULL) store_free(main_keystrings[n]);
 main_keystrings[n] = news;
 }
 
@@ -150,7 +148,7 @@ for (;;)
       {
       int n;
       sys_mprintf(msgs_fid, "NE: ");
-      if (Ufgets(cmd_buffer, cmd_buffer_size, kbd_fid) == NULL)
+      if (Ufgets(cmd_buffer, CMD_BUFFER_SIZE, kbd_fid) == NULL)
         cmd_buffer[0] = 0;
       n = Ustrlen(cmd_buffer);
       if (n > 0 && cmd_buffer[n-1] == '\n') cmd_buffer[n-1] = 0;

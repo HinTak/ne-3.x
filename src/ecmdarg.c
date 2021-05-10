@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: August 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains code for reading the arguments of commands */
@@ -24,7 +24,7 @@ static void c_save(cmdstr *);  /* Used before defined */
 
 static void noargs(cmdstr *c)
 {
-c = c;
+(void)c;
 }
 
 

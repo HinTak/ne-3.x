@@ -2,15 +2,15 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
 
-/* This file contains one function, which sets up the current version and 
+/* This file contains one function, which sets up the current version and
 copyright strings. */
 
-#define VERSION    "3.17"
-#define COPYRIGHT  "Copyright (c) University of Cambridge 2018"
+#define VERSION    "3.18"
+#define COPYRIGHT  "Copyright (c) University of Cambridge 2021"
 
 #include "ehdr.h"
 
@@ -38,12 +38,10 @@ Ustrcpy(today, __DATE__);
 if (today[4] == ' ') i = 1;
 today[3] = today[6] = '-';
 
-version_date = US malloc(20);
-Ustrcpy(version_date, "(");
-
-/* We used to use Ustrncat() to extract and re-arrange the date string, but GCC 
+/* We used to use Ustrncat() to extract and re-arrange the date string, but GCC
 now warns when the whole string isn't copied. */
 
+version_date[0] = '(';
 p = memcpy(version_date+1, today+4+i, 3-i);
 p = memcpy(p + 3-i, today, 4);
 p = memcpy(p + 4, today+7, 4);

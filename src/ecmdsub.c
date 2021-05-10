@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: August 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains code for command-processing functions */
@@ -309,7 +309,7 @@ if (cmd_cbufferline != NULL)
   {
   if ((cmd_cbufferline->flags & lf_eof) != 0) eof = TRUE; else
     {
-    if (cmd_cbufferline->len > cmd_buffer_size - 2)
+    if (cmd_cbufferline->len > CMD_BUFFER_SIZE - 2)
        {
        error_moan(56);
        cmd_faildecode = TRUE;
@@ -329,7 +329,7 @@ the line afterwards. */
 else if (main_screenOK && cmdin_fid == NULL)
   {
   scrn_rdline(FALSE, US"NE+ ");
-  memmove(cmd_buffer+1, cmd_buffer, cmd_buffer_size-1);
+  memmove(cmd_buffer+1, cmd_buffer, CMD_BUFFER_SIZE-1);
   main_nowait = main_repaint = TRUE;
   }
 else
@@ -340,7 +340,7 @@ else
     error_printflush();
     }
   eof = (cmdin_fid == NULL) || 
-    (Ufgets(cmd_buffer+1, cmd_buffer_size-1, cmdin_fid) == NULL);
+    (Ufgets(cmd_buffer+1, CMD_BUFFER_SIZE-1, cmdin_fid) == NULL);
   if (!eof) cmd_clineno++;
   }
 
@@ -457,7 +457,7 @@ for (;;)
       {
       error_printf("%s", buff);
       error_printflush();
-      if (Ufgets(cmd_buffer, cmd_buffer_size, kbd_fid) == NULL) return 0;
+      if (Ufgets(cmd_buffer, CMD_BUFFER_SIZE, kbd_fid) == NULL) return 0;
       }
     cmdbufflen = Ustrlen(cmd_buffer);
     if (cmdbufflen > 0 && cmd_buffer[cmdbufflen-1] == '\n')
@@ -708,7 +708,7 @@ if (main_interactive) for (;;)
     {
     error_printf("%s", prompt);
     error_printflush();
-    if (Ufgets(cmd_buffer, cmd_buffer_size, kbd_fid) == NULL) break;
+    if (Ufgets(cmd_buffer, CMD_BUFFER_SIZE, kbd_fid) == NULL) break;
     }
 
   cmd_ptr = cmd_buffer;

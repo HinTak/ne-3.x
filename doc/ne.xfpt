@@ -33,7 +33,7 @@
 . the <bookinfo> element must also be updated for each new edition.
 . /////////////////////////////////////////////////////////////////////////////
 
-.set version "3.17"
+.set version "3.18"
 .set R "&#x261e;"
 .set B "&#x200B;"
 
@@ -59,16 +59,16 @@
 <bookinfo>
 <title>Specification of the NE text editor</title>
 <titleabbrev>NE</titleabbrev>
-<date>21 October 2018</date>
+<date>04 May 2021</date>
 <author><firstname>Philip</firstname><surname>Hazel</surname></author>
 <authorinitials>PH</authorinitials>
 <address>Cambridge, England</address>
 <revhistory><revision>
-  <revnumber>3.17</revnumber>
-  <date>21 October 2018</date>
+  <revnumber>3.18</revnumber>
+  <date>04 May 2021</date>
   <authorinitials>PH</authorinitials>
 </revision></revhistory>
-<copyright><year>2018</year><holder>Philip Hazel</holder></copyright>
+<copyright><year>2021</year><holder>Philip Hazel</holder></copyright>
 </bookinfo>
 .literal off
 
@@ -298,8 +298,8 @@ on the screen are shown in boldface type.
 &`This is the last line of the file.`&
 &`&*End of file*&`&
 
-&`&*1    IRUA  test ---2----*----3----*----4----*----|*&`&
-&`NE version 3.13 with PCRE 10.22 (18-Dec-2016)`&
+&`&*1    IRUA  testfile ----*----3----*----4----*----|*&`&
+&`NE version 3.18 (04-May-2021) using PCRE 10.36 `&
 .endd
 .
 The screen display consists of four sections. The top line is an inverse

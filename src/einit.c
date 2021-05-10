@@ -2,10 +2,10 @@
 *       The E text editor - 3rd incarnation      *
 *************************************************/
 
-/* Copyright (c) University of Cambridge, 1991 - 2018 */
+/* Copyright (c) University of Cambridge, 1991 - 2021 */
 
 /* Written by Philip Hazel, starting November 1991 */
-/* This file last modified: AUgust 2018 */
+/* This file last modified: May 2021 */
 
 
 /* This file contains initializing code, including the main program, which is
@@ -17,8 +17,8 @@ the entry point to NE. It also contains termination code. */
 #include "cmdhdr.h"
 
 
-static uschar arg_from_buffer[100];
-static uschar arg_to_buffer[100];
+static uschar *arg_from_buffer;
+static uschar *arg_to_buffer;
 
 static jmp_buf rdline_env;
 
@@ -29,11 +29,11 @@ static jmp_buf rdline_env;
 *************************************************/
 
 /* We simply set a flag. Resetting the trap happens later when the signal is
-noticed. This allows two interrupts to kill a looping E. */
+noticed. This allows two interrupts to kill a looping NE. */
 
 static void sigint_handler(int sig)
 {
-sig = sig;
+(void)sig;
 main_escape_pressed = TRUE;
 }
 
@@ -45,7 +45,7 @@ main_escape_pressed = TRUE;
 
 static void fgets_sigint_handler(int sig)
 {
-sig = sig;
+(void)sig;
 main_escape_pressed = TRUE;
 longjmp(rdline_env, 1);
 }
@@ -326,7 +326,7 @@ return TRUE;
 
 static void givehelp(void)
 {
-printf("NE %s %s using PCRE %s\n%s\n\n", version_string, version_date, 
+printf("NE %s %s using PCRE %s\n%s\n\n", version_string, version_date,
   version_pcre, version_copyright);
 printf("-from <files>  input files, default null, - means stdin, key can be omitted\n");
 printf("-to <file>     output file for 1st input, default = from\n");
@@ -398,7 +398,7 @@ if (rc != 0)
 
 if (results[arg_id].data.number != 0)
   {
-  printf("NE %s %s using PCRE %s\n", version_string, version_date, 
+  printf("NE %s %s using PCRE %s\n", version_string, version_date,
     version_pcre);
   exit(EXIT_SUCCESS);
   }
@@ -484,11 +484,7 @@ if (results[arg_ver].data.text != NULL)
     }
   }
 
-/* Deal with "from" & "to" - the data must not be stored in NE's dynamic store,
-because that gets flushed when setting up for a new editing session in systems
-that run under windows, e.g. RISC OS. We choose the simple way out, and use
-some built-in buffers. [This comment is now obsolete, but there's no point in
-messing with the code just for the sake of it.] */
+/* Deal with "from" & "to" */
 
 if (results[arg_from].data.text != NULL)
   {
@@ -627,7 +623,7 @@ obey_init(uschar *filename)
 {
 FILE *f = sys_fopen(filename, US"r");
 if (f == NULL) error_moan(5, filename, "reading", strerror(errno));
-while (Ufgets(cmd_buffer, cmd_buffer_size, f) != NULL) cmd_obey(cmd_buffer);
+while (Ufgets(cmd_buffer, CMD_BUFFER_SIZE, f) != NULL) cmd_obey(cmd_buffer);
 fclose(f);
 }
 
@@ -644,7 +640,7 @@ uschar *toname = (arg_to_name == NULL)? arg_from_name : arg_to_name;
 
 if (main_interactive)
   {
-  printf("NE %s %s using PCRE %s\n", version_string, version_date, 
+  printf("NE %s %s using PCRE %s\n", version_string, version_date,
     version_pcre);
   main_verify = main_shownlogo = TRUE;
   }
@@ -680,7 +676,7 @@ if (init_init(NULL, fromname, toname))
       {
       int n;
       if (cmdin_fid == NULL ||
-          Ufgets(cmd_buffer, cmd_buffer_size, cmdin_fid) == NULL)
+          Ufgets(cmd_buffer, CMD_BUFFER_SIZE, cmdin_fid) == NULL)
         {
         Ustrcpy(cmd_buffer, "w\n");
         }
@@ -720,56 +716,18 @@ else if (Ustrcmp(main_tabs, "tabinout") == 0) main_tabin = main_tabout = TRUE;
 
 
 /*************************************************
-*                Entry Point                     *
+*           Exit tidy-up function                *
 *************************************************/
-
-int main(int argc, char **argv)
-{
-int sigptr = 0;
-kbd_fid = cmdin_fid = stdin;             /* defaults */
-msgs_fid = stdout;
-
-setvbuf(msgs_fid, NULL, _IONBF, 0);
-
-tables_init();                   /* initialize tables */
-keystrings_init();               /* set up default variable keystrings */
-
-sys_init1();                     /* Early local initialization */
-version_init();                  /* Set up for messages */
-store_init();                    /* Initialize store handler */
-tab_init();                      /* Set default tab options */
-arg_zero = US argv[0];           /* Some systems want this */
-decode_command(argc, argv);      /* Decode command line */
-if (main_binary && allow_wide) error_moan(64);  /* Hard */
-sys_init2();                     /* Final local initialization */
-
-cmd_buffer = malloc(cmd_buffer_size);
-
-if ((arg_from_name != NULL && Ustrcmp(arg_from_name, "-") == 0) ||
-    (arg_to_name != NULL && Ustrcmp(arg_to_name, "-") == 0))
-      main_interactive = main_screenmode = main_screenOK = FALSE;
-  
-/* Set handler to trap keyboard interrupts */
-  
-signal(SIGINT, sigint_handler);
-  
-/* Set handler for all other relevant signals to dump buffers and exit from NE.
-The list of signals is system-dependent. Trapping these interrupts can be cut
-out when debugging so the original cause of a fault can more easily be found. */
-    
-if (!no_signal_traps)
-  { 
-  while (signal_list[sigptr] > 0) signal(signal_list[sigptr++], crash_handler);
-  } 
-
-/* The variables main_screenmode and main_interactive will have been set to
-indicate the style of editing run. */
-
-msgs_tty = isatty(fileno(msgs_fid));
-
-if (main_screenmode) { cmdin_fid = NULL; sys_runscreen(); }
-  else main_runlinebyline();
-
+                                                  
+/* Automatically called for any exit. Close the input file if it is open, then
+free the extensible buffers and other memory.                          
+                                                                               
+Arguments: none                                                              
+Returns:   nothing                            
+*/
+                                
+static void tidy_up(void)
+{                
 if (debug_file != NULL) fclose(debug_file);
 if (crash_logfile != NULL) fclose(crash_logfile);
 
@@ -778,12 +736,80 @@ initialised) so there's no need to check. */
 
 #ifndef USE_PCRE1
 pcre2_general_context_free(re_general_context);
+pcre2_compile_context_free(re_compile_context);
 pcre2_match_data_free(re_match_data);
 #endif
 
-if (main_screenOK && main_nlexit && main_pendnl)
-  sys_mprintf(msgs_fid, "\r\n");
+sys_tidy_up();
+store_free_all();
+}
 
+
+/*************************************************
+*                Entry Point                     *
+*************************************************/
+
+int main(int argc, char **argv)
+{
+int sigptr = 0;
+uschar cbuffer[CMD_BUFFER_SIZE];
+uschar fbuffer1[FNAME_BUFFER_SIZE];
+uschar fbuffer2[FNAME_BUFFER_SIZE];
+uschar fbuffer3[FNAME_BUFFER_SIZE];
+
+if (atexit(tidy_up) != 0) error_moan(68);  /* Hard */
+
+cmd_buffer = cbuffer;            /* make globally available */
+arg_from_buffer = fbuffer1;      /* make available to functions above */
+arg_to_buffer = fbuffer2;
+
+kbd_fid = cmdin_fid = stdin;     /* defaults */
+msgs_fid = stdout;
+
+setvbuf(msgs_fid, NULL, _IONBF, 0);
+
+store_init();                    /* Initialize store handler */
+tables_init();                   /* Initialize tables */
+keystrings_init();               /* Set up default variable keystrings */
+
+sys_init1();                     /* Early local initialization */
+version_init();                  /* Set up for messages */
+tab_init();                      /* Set default tab options */
+arg_zero = US argv[0];           /* Some systems want this */
+decode_command(argc, argv);      /* Decode command line */
+if (main_binary && allow_wide) error_moan(64);  /* Hard */
+sys_init2(fbuffer3);             /* Final local initialization */
+
+if ((arg_from_name != NULL && Ustrcmp(arg_from_name, "-") == 0) ||
+    (arg_to_name != NULL && Ustrcmp(arg_to_name, "-") == 0))
+      main_interactive = main_screenmode = main_screenOK = FALSE;
+
+/* Set handler to trap keyboard interrupts */
+
+signal(SIGINT, sigint_handler);
+
+/* Set handler for all other relevant signals to dump buffers and exit from NE.
+The list of signals is system-dependent. Trapping these interrupts can be cut
+out when debugging so the original cause of a fault can more easily be found. */
+
+if (!no_signal_traps)
+  {
+  while (signal_list[sigptr] > 0) signal(signal_list[sigptr++], crash_handler);
+  }
+
+/* The variables main_screenmode and main_interactive will have been set to
+indicate the style of editing run. */
+
+msgs_tty = isatty(fileno(msgs_fid));
+
+if (main_screenmode) 
+  { 
+  cmdin_fid = NULL; 
+  sys_runscreen(); 
+  }
+else main_runlinebyline();
+
+if (main_screenOK && main_nlexit && main_pendnl) sys_mprintf(msgs_fid, "\r\n");
 return sys_rc(main_rc);
 }
 
