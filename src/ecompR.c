@@ -657,7 +657,7 @@ return TRUE;
 developed a long time ago. If the Unix Regular Expression flag is
 set, we translate Unix-style REs into E-style REs first. */
 
-BOOL cmd_makeFSM(qsstr *qs)
+BOOL cmd_makeCRE(qsstr *qs)
 {
 int i, len;
 char *s;
@@ -683,12 +683,12 @@ s = qs->rtext + 1;       /* Past the delimiter */
 
 /* Get store for FSM data if necessary (4 vectors) */
 
-if (qs->fsm == NULL) qs->fsm = store_Xget(len*4+4);
+if (qs->cre == NULL) qs->cre = store_Xget(len*4+4);
 
 /* Set up global pointers to avoid too much argument and address
 passing, and zero the flag bytes. */
 
-R_String = qs->fsm;
+R_String = qs->cre;
 R_States = R_String + len + 1;
 R_Sflags = R_States + len + 1;
 R_List   = R_Sflags + len + 1;

@@ -130,10 +130,17 @@ typedef struct qsstr {
   short int length;            /* length of original string */
   #ifdef USE_PCRE1
   pcre *cre;                   /* pointer to compiled regex */
-  #else
+  #endif
+  #ifdef USE_PCRE2
   pcre2_code *cre;             /* pointer to compiled regex */
   #endif
+  short int rlength;           /* length of (possibly converted) RE string */
+                               /* unused for PCRE regexs */
+  unsigned char *cre;          /* finite state machine for R */
+                               /* or pointer to pcre block for PCRE use */
   uschar *hexed;               /* hexed chars for non-R */
+  char *rtext;                 /* converted RE string */
+                               /* unused for PCRE regexs */
   uschar *text;                /* data chars */
   usint map[qsmapsize];        /* bit map for contained chars */
 } qsstr;

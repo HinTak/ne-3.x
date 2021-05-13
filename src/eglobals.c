@@ -153,6 +153,7 @@ BOOL  main_tabin = FALSE;
 BOOL  main_tabout = FALSE;
 uschar *main_tabs = US"tabs";
 int   main_undeletecount = 0;
+BOOL  main_unixregexp = FALSE;
 BOOL  main_utf8terminal = FALSE;
 int   main_vcursorscroll = 1;
 int   main_vmousescroll = 1;

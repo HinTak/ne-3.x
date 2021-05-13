@@ -126,14 +126,14 @@ in the wrong direction (which can happen if the argument of an
 F command is reused with a BF command or vice versa), then
 compile it. */
 
-if (qs->fsm == NULL ||
+if (qs->cre == NULL ||
   (backwards && (flags & qsef_REV) == 0) ||
     (!backwards && (flags & qsef_REV) != 0))
-       cmd_makeFSM(qs);
+       cmd_makeCRE(qs);
 
 /* Set up global pointers to the FSM vectors */
 
-R_String = qs->fsm;
+R_String = qs->cre;
 R_States = R_String + len + 1;
 R_Sflags = R_States + len + 1;
 R_List   = R_Sflags + len + 1;
@@ -661,15 +661,13 @@ strings found, nothing is inserted. The final argument is the address
 of a flag, which is set FALSE if wild strings are required and the
 first word of the Journal is -1, indicating that it overflowed. */
 
-linestr *cmd_ReChange(linestr *line, char *p, int len,
-  BOOL hexflag, BOOL eflag, BOOL aflag, BOOL *aok)
+linestr *cmd_ReChange(linestr *line, uschar *p, usint len,
+  BOOL hexflag, BOOL eflag, BOOL aflag)
 {
 int i, pp;
 int n = 0;
 int size = 1024;
 char *v = store_Xget(size);
-
-*aok = TRUE;
 
 /* Loop to scan replacement string */
 
@@ -726,12 +724,12 @@ for (pp = 0; pp < len; pp++)
 if (eflag)
   {
   line_deletech(line, match_start, match_end - match_start, TRUE);
-  line_insertch(line, match_start, v, n, 0);
+  line_insertbytes(line, -1, match_start, v, n, 0);
   cursor_col = match_start + n;
   }
 else
   {
-  line_insertch(line, (aflag? match_end:match_start), v, n, 0);
+  line_insertbytes(line, -1, (aflag? match_end:match_start), v, n, 0);
   cursor_col = match_end + n;
   }
 
