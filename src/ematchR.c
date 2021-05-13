@@ -33,28 +33,10 @@ if (n > (int)R_String[0]) n = 0;    /* past end = "done" */
 
 /* Maintain Journal if required */
 
-if (R_Journal != NULL && type >= 0 && R_Jptr < JournalSize)
-  {
-  R_Journal[R_Jptr] = old;
-  R_Journal[R_Jptr+1] = ch;
-  R_Journal[R_Jptr+2] = n;
-  R_Journal[R_Jptr+3] = type;
-  R_Jptr += 4;
-  }
-
 if ((R_Sflags[n] & R_Listed) == 0)
   {
   R_Sflags[n] |= R_Listed;
   R_List[R_ListPtr++] = n;
-
-  if ((R_Sflags[n] & R_Endalt) != 0 && R_Journal != NULL && R_Jptr < JournalSize)
-    {
-    R_Journal[R_Jptr] = n;
-    R_Journal[R_Jptr+1] = 0;
-    R_Journal[R_Jptr+2] = n;
-    R_Journal[R_Jptr+3] = 6;
-    R_Jptr += 4;
-    }
   }
 }
 
@@ -546,148 +528,6 @@ else for (;;)
 
     /* A non-zero value for R_Journal implies wild string tracing */
 
-    if (R_Journal != NULL)
-      {
-      int this;           /* pointer variable */
-      int woffset = 0;    /* offset for next wild string */
-
-      #ifdef REDEBUGWF    /* write out full journal */
-        {
-        int xct = 9999;
-        for (k = 4; k <= R_Jptr-4; k += 4)
-          {
-          int cc = R_Journal[k+1];
-          int ww = R_Journal[k+3];
-          if (++xct > 5) { debug_printf("\n"); xct = 1; }
-          if (cc == 0)
-            debug_printf("(%d,,%d,%d) ",R_Journal[k],R_Journal[k+2],ww);
-          else
-            debug_printf("(%d,%c,%d,%d) ",R_Journal[k],cc,R_Journal[k+2],ww);
-          }
-        debug_printf("\n");
-        }
-      #endif
-
-      /* Reverse scan of journal to establish what was matched and
-      cancel (by setting first byte to zero) all other entries. */
-
-      this = 0;
-      for (k = R_Jptr-4; k >= 4; k -= 4)
-        if (R_Journal[k+2] == this) this = R_Journal[k];
-          else R_Journal[k] = 0;
-
-      /* Debugging output for edited journal */
-
-      #ifdef REDEBUGW
-        {
-        int xct = 9999;
-        for (k = 4; k < R_Jptr; k += 4) if (R_Journal[k])
-          {
-          int cc = R_Journal[k+1];
-          int ww = R_Journal[k+3];
-          if (++xct > 5) { debug_printf("\n"); xct = 1; }
-          if (cc == 0)
-            debug_printf("(%d,,%d,%d) ",R_Journal[k],R_Journal[k+2],ww);
-          else
-            debug_printf("(%d,%c,%d,%d) ",R_Journal[k],cc,R_Journal[k+2],ww);
-          }
-        debug_printf("\n");
-        }
-      #endif
-
-      /* Now establish the wild strings; the start of a bracketed
-      group supersedes any other form of wild string. Note the
-      change of endtype if a nested bracketed group is found. This
-      deals with the case #(..). */
-
-      R_Journal[woffset] = 255;   /* default no wild strings */
-      this = 4;                   /* scan start point */
-
-      while (this < R_Jptr)
-        {
-        while (this < R_Jptr && R_Journal[this] == 0) this += 4;
-        if (this >= R_Jptr) break;
-        switch (R_Journal[this+3])
-          {
-          case 0:    /* start of wild string */
-          case 5:    /* start of bracketed group */
-            {
-            int n = 0;        /* count */
-            int endtype = (R_Journal[this+3] == 0)? 1 : 6;
-            this += 4;
-            while (this < R_Jptr)
-              {
-              if (R_Journal[this] > 0)
-                {
-                int type = R_Journal[this+3];
-                if (type == 5) endtype = 6;
-                else if (type == endtype) break;
-                else if (type == 3 || type == 4)
-                  {
-                  R_Journal[woffset + (++n)] = R_Journal[this+1];
-                  }
-                }
-              this += 4;
-              }
-            R_Journal[woffset] = n;
-            woffset += n + 1;
-            R_Journal[woffset] = 255;
-            }
-          break;
-
-          case 3:    /* single char wild string */
-          R_Journal[woffset] = 1;
-          R_Journal[woffset+1] = R_Journal[this+1];
-          woffset += 2;
-          R_Journal[woffset] = 255;
-          break;
-          }
-        this += 4;
-        }
-
-      /* If the matching has taken place by scanning the line from
-      right to left, we must reverse each of the wild strings, since
-      they have been stored from left to right. We must also reverse
-      the order of the strings themselves. We reverse the entire
-      vector of strings, then move the lengths to the beginning. */
-
-      if (backwards)
-        {
-        int x = 0;
-        int y = woffset - 1;
-        while (x < y)
-          {
-          int t = R_Journal[x];
-          R_Journal[x++] = R_Journal[y];
-          R_Journal[y--] = t;
-          }
-        x = woffset - 1;
-        while (x >= 0)
-          {
-          int ii;
-          int n = R_Journal[x];
-          for (ii = x; ii > x - n; ii--) R_Journal[ii] = R_Journal[ii-1];
-          R_Journal[x-n] = n;
-          x -= n + 1;
-          }
-        }
-
-      #ifdef REDEBUGW
-      woffset = 0;
-      if (R_Journal[woffset] == 255) debug_printf("No wild strings");
-      else while (R_Journal[woffset] != 255)
-        {
-        int ii;
-        int n = R_Journal[woffset];
-        debug_printf("\"");
-        for (ii = woffset+1; ii <= woffset+n; ii++) debug_printf("%c", R_Journal[ii]);
-        debug_printf("\" ");
-        woffset += n + 1;
-        }
-      debug_printf("\n");
-      #endif
-      }
-
     /* End of Journal handling code */
 
     #ifdef REDEBUG
@@ -781,9 +621,6 @@ if ((flags & qsef_N) != 0)
 
 /* If the match has succeeded but the journal has overflowed,
 indicate this by setting a flag. */
-
-if (yield && R_Journal != NULL && R_Jptr >= JournalSize)
-  Journal_Overflowed = TRUE;
 
 /* At last, the end of the business */
 
@@ -879,20 +716,6 @@ for (pp = 0; pp < len; pp++)
         char *ppp = line->text;
         while (n + match_end - match_start >= size) v = incbuffer(v, &size);
         for (i = match_start; i < match_end; i++) v[n++] = ppp[i];
-        }
-      else if (R_Journal != NULL)
-        {
-        int c = cc - '0' - 1;
-        int j = 0;
-        if (Journal_Overflowed) { *aok = FALSE; return line; }
-
-        while (c-- != 0 && R_Journal[j] != 255) j += R_Journal[j] + 1;
-
-        if (R_Journal[j] != 255)
-          {
-          while (n + (int)R_Journal[j] >= size) v = incbuffer(v, &size);
-          for (i = 1; i <= (int)R_Journal[j]; i++) v[n++] = R_Journal[j+i];
-          }
         }
       }
     }
