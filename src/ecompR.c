@@ -31,7 +31,7 @@ int R_Jptr;
 
 /* For the Unix conversion routines */
 
-static char *re_inptr, *re_inend, *re_inbegin;
+static uschar *re_inptr, *re_inend, *re_inbegin;
 
 
 /* Mutual recursion occurs */

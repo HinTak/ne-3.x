@@ -87,7 +87,7 @@ placed in the journal vector as a sequence of BCPL strings. */
 
 BOOL cmd_matchqsR(qsstr *qs, linestr *line, int USW)
 {
-char *chars = line->text;
+uschar *chars = line->text;
 
 int count = qs->count;
 int flags = qs->flags;
@@ -635,9 +635,9 @@ return yield;
 
 /* This is an auxiliary function for cmd_ReChange(). */
 
-static char *incbuffer(char *v, int *sizep)
+static uschar *incbuffer(uschar *v, int *sizep)
 {
-char *newv = store_Xget(*sizep + 1024);
+uschar *newv = store_Xget(*sizep + 1024);
 memcpy(newv, v, *sizep);
 *sizep += 1024;
 return newv;
@@ -667,7 +667,7 @@ linestr *cmd_ReChange(linestr *line, uschar *p, usint len,
 int i, pp;
 int n = 0;
 int size = 1024;
-char *v = store_Xget(size);
+uschar *v = store_Xget(size);
 
 /* Loop to scan replacement string */
 
@@ -711,7 +711,7 @@ for (pp = 0; pp < len; pp++)
       if (!isdigit(cc)) v[n++] = cc;
       else if (cc == '0')
         {
-        char *ppp = line->text;
+        uschar *ppp = line->text;
         while (n + match_end - match_start >= size) v = incbuffer(v, &size);
         for (i = match_start; i < match_end; i++) v[n++] = ppp[i];
         }
