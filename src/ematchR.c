@@ -524,8 +524,6 @@ else for (;;)
 
   if (matched)
     {
-    int k;
-
     /* A non-zero value for R_Journal implies wild string tracing */
 
     /* End of Journal handling code */
