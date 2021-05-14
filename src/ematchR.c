@@ -85,7 +85,7 @@ are then EITHER (a) any characters between a change of type 0 and a
 change of type 1 OR (b) individual characters of type 3. They are
 placed in the journal vector as a sequence of BCPL strings. */
 
-BOOL cmd_matchqsR(qsstr *qs, linestr *line, int USW)
+int cmd_matchqsR(qsstr *qs, linestr *line, int USW)
 {
 uschar *chars = line->text;
 
@@ -100,7 +100,7 @@ int p;                    /* current posn */
 
 BOOL U = (flags & qsef_U) != 0 || ((USW & qsef_U) != 0 && (flags & qsef_V) == 0);
 BOOL W = (flags & qsef_W) != 0 || (USW & qsef_W) != 0;
-BOOL yield = FALSE;
+int yield = MATCH_FAILED;
 BOOL backwards = (flags & qsef_L) != 0 || ((match_L || (flags & qsef_E) != 0) &&
   (flags & qsef_B) == 0);
 
@@ -162,7 +162,7 @@ use of a value less than -1 to mean "unset". */
 
 if (((flags & qsef_B) != 0 && p+1 != wleft) ||
   ((flags & qsef_B) == 0 && (flags & qsef_E) != 0 && p != wright))
-    yield = FALSE;
+    yield = MATCH_FAILED;
 
 else for (;;)
   {
@@ -571,7 +571,7 @@ else for (;;)
       {
       if (--count <= 0)
         {
-        yield = TRUE;
+        yield = MATCH_OK;
         if (backwards) match_start = p;
           else match_end = p+1;
         break;                /* to end Outer Loop */
@@ -609,8 +609,8 @@ the whole line if necessary. */
 
 if ((flags & qsef_N) != 0)
   {
-  yield = !yield;
-  if (yield)
+  yield = (yield == MATCH_FAILED)? MATCH_OK : MATCH_FAILED;
+  if (yield == MATCH_OK)
     {
     match_start = 0;
     match_end = line->len;
