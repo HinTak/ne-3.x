@@ -139,7 +139,7 @@ typedef struct qsstr {
   unsigned char *cre;          /* finite state machine for R */
                                /* or pointer to pcre block for PCRE use */
   uschar *hexed;               /* hexed chars for non-R */
-  char *rtext;                 /* converted RE string */
+  uschar *rtext;               /* converted RE string */
                                /* unused for PCRE regexs */
   uschar *text;                /* data chars */
   usint map[qsmapsize];        /* bit map for contained chars */
