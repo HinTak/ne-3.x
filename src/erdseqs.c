@@ -116,10 +116,10 @@ qs->type = cb_qstype;
 qs->count = count;
 qs->windowleft = wleft;
 qs->windowright = wright;
-qs->length = n;
+qs->length = qs->rlength = n;
 qs->cre = NULL;
 qs->hexed = NULL;
-p = qs->text = store_Xget(n+2);
+p = qs->text = qs->rtext = store_Xget(n+2);
 
 *p++ = dch;
 for (i = 0; i < n; i++) *p++ = *cmd_ptr++;

@@ -180,6 +180,7 @@ switch (cb->type)
     qsstr *y = (qsstr *)yield;
     qsstr *q = (qsstr *)cb;
     y->text  = store_copy(q->text);
+    y->rtext = (q->rtext == q->text)? y->text : (uschar *)store_copy(q->rtext);
     y->cre   = store_copy(q->cre);
     y->hexed = store_copy(q->hexed);
     }
@@ -255,6 +256,7 @@ switch (cb->type)
     {
     qsstr *q = (qsstr *)cb;
     store_free(q->text);
+    if (q->rtext != q->text) store_free(q->rtext);
     store_free(q->cre);
     store_free(q->hexed);
     }
