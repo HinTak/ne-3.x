@@ -176,7 +176,7 @@ usint match_start;
 
 usint mouse_col;
 usint mouse_row;
-BOOL mouse_enable = TRUE;
+BOOL mouse_enable = FALSE;
 BOOL msgs_tty;
 
 BOOL no_signal_traps = FALSE;
