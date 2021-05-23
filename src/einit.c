@@ -350,7 +350,7 @@ printf("-id            show current version\n");
 printf("--help         output this help\n");
 printf("-h[elp]        output this help\n");
 
-printf("\nThe tabbing default is -tabs unless overridden by the NETABS "
+printf("\nThe tabbing default is -notabs unless overridden by the NETABS "
        "environment\nvariable.\n\n");
 
 printf("          EXAMPLES\n");
@@ -701,7 +701,7 @@ if (init_init(NULL, fromname, toname))
 *          Set up tab options                    *
 *************************************************/
 
-/* All 3 flags are FALSE on entry; main_tabs is set by default, but may be
+/* All 3 flags are FALSE on entry; main_tabs is not set by default, but may be
 overridden by the NETABS environment variable.  */
 
 static void tab_init(void)

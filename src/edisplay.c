@@ -148,7 +148,7 @@ if (wipeflag)
     else if (j%10 == 0 && j < MAX_RMARGIN)
       {
       int n;
-      uschar b[11];
+      uschar b[8];
 
       #ifdef NO_PERCENT_N
       sprintf(b, "%d", j/10);
