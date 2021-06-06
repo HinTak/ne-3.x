@@ -832,6 +832,10 @@ int n = 0;
 int size = 1024;
 uschar *v = store_Xget(size);
 
+BOOL ok;
+BOOL *aok = &ok;
+*aok = TRUE;
+
 /* Loop to scan replacement string */
 
 for (pp = 0; pp < len; pp++)

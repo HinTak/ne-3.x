@@ -344,6 +344,11 @@ if (!stringsearch && cursor_col != 0)
 
 REreplace = (nt->flags & qsef_R) != 0;
 
+/* No Journal for PCRE regex */
+
+if (stringsearch && (((qsstr *)se)->flags & (qsef_R)) == qsef_R)
+  R_Journal = store_Xget(JournalSize);
+
 match_L = FALSE;
 if (!cmd_casematch) USW |= qsef_U;
 if (main_rmargin < MAX_RMARGIN) main_rmargin += MAX_RMARGIN;
@@ -409,6 +414,7 @@ else
 /* Restore rmargin before exit */
 
 main_rmargin = oldrmargin;
+if (R_Journal != NULL) { store_free(R_Journal); R_Journal = NULL; }
 return yield;
 }
 
