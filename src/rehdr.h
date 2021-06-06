@@ -91,8 +91,6 @@ R_List while matching. It is also used to keep track of the current
 position in the string while compiling. */
 
 
-#define JournalSize   4096
-
 #define R_MatchState  0x80
 #define R_Listed      0x40
 #define R_XListed     0xBF

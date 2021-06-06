@@ -101,7 +101,6 @@ See the doc/ChangeLog file for a list of changes in the various releases.
 #define FNAME_BUFFER_SIZE 4096    /* file names can be long */
 
 #define back_size           20    /* number of "back" reference regions */
-#define JournalSize       4096
 
 #define mac_skipspaces(a)  while (*a == ' ') a++
 
@@ -506,8 +505,6 @@ extern BOOL    msgs_tty;               /* TRUE if msgs_fid is a tty */
 
 extern sestr  *par_begin;
 extern sestr  *par_end;
-
-extern unsigned char *R_Journal;       /* Set up by RE callers */
 
 #ifndef USE_PCRE1
 extern pcre2_general_context *re_general_context;

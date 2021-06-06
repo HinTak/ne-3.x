@@ -251,11 +251,6 @@ stringsearch = (se->type == cb_qstype) &&
   ((((qsstr *)se)->flags & qsef_N) == 0);
 REreplace = (nt->flags & qsef_R) != 0;
 
-/* No Journal for PCRE regex */
-
-if (stringsearch && (((qsstr *)se)->flags & (qsef_R)) == qsef_R)
-  R_Journal = store_Xget(JournalSize);
-
 match_L = FALSE;
 if (!cmd_casematch) USW |= qsef_U;
 if (main_rmargin < MAX_RMARGIN) main_rmargin += MAX_RMARGIN;
@@ -544,7 +539,6 @@ if (!quit)
   main_current = oldcurrent;
   }
 
-if (R_Journal != NULL) { store_free(R_Journal); R_Journal = NULL; }
 main_drawgraticules |= resetgraticules;
 return yield;
 }

@@ -22,7 +22,6 @@ be external? Each module could have its own. */
 unsigned char *R_String;
 unsigned char *R_States;
 unsigned char *R_Sflags;
-unsigned char *R_Journal;
 unsigned char *R_List;
 
 int R_ListPtr;
