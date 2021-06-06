@@ -542,6 +542,8 @@ else for (;;)
 
   if (matched)
     {
+    int k;
+
     /* A non-zero value for R_Journal implies wild string tracing */
 
     if (R_Journal != NULL)
